@@ -2,9 +2,6 @@
 //
 // Execute `rustlings hint threads3` or use the `hint` watch subcommand for a
 // hint.
-
-// I AM NOT DONE
-
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
@@ -25,11 +22,13 @@ impl Queue {
         }
     }
 }
-
 fn send_tx(q: Queue, tx: mpsc::Sender<u32>) -> () {
     let qc = Arc::new(q);
     let qc1 = Arc::clone(&qc);
     let qc2 = Arc::clone(&qc);
+
+    // 克隆一个发送端给第二个线程
+    let tx2 = tx.clone(); 
 
     thread::spawn(move || {
         for val in &qc1.first_half {
@@ -42,10 +41,13 @@ fn send_tx(q: Queue, tx: mpsc::Sender<u32>) -> () {
     thread::spawn(move || {
         for val in &qc2.second_half {
             println!("sending {:?}", val);
-            tx.send(*val).unwrap();
+            tx2.send(*val).unwrap(); // 使用克隆的 tx2
             thread::sleep(Duration::from_secs(1));
         }
     });
+    
+    // 当 send_tx 函数结束时，原来的 tx 会在这里离开作用域自动销毁。
+    // 只有两个克隆的 tx 都在各自线程完成工作后被销毁，main 里的循环才会结束。
 }
 
 fn main() {

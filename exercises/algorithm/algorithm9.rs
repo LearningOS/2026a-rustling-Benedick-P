@@ -2,8 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
-
 use std::cmp::Ord;
 use std::default::Default;
 
@@ -37,7 +35,20 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        let mut idx = self.count;
+
+        // 上浮：只要不是根节点，且当前节点比父节点更“优先”，就交换
+        while idx > 1 {
+            let parent = self.parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[parent]) {
+                self.items.swap(idx, parent);
+                idx = parent;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,9 +68,21 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+
+        // 如果右子节点越界，说明只有左子节点，直接返回左子节点
+        if right > self.count {
+            left
+        } else {
+            // 如果右子节点更“优先”，返回右子节点，否则返回左子节点
+            if (self.comparator)(&self.items[right], &self.items[left]) {
+                right
+            } else {
+                left
+            }
     }
+}
 }
 
 impl<T> Heap<T>
@@ -84,8 +107,30 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            return None;
+        }
+
+        // 1. 将堆顶（items[1]）与最后一个元素交换
+        self.items.swap(1, self.count);
+        
+        // 2. 弹出最后一个元素（也就是原来的堆顶）
+        let result = self.items.pop();
+        self.count -= 1;
+
+        // 3. 下沉：从根节点开始，与更“优先”的子节点交换
+        let mut idx = 1;
+        while self.children_present(idx) {
+            let child = self.smallest_child_idx(idx);
+            // 如果子节点比当前节点更“优先”，就交换
+            if (self.comparator)(&self.items[child], &self.items[idx]) {
+                self.items.swap(idx, child);
+                idx = child;
+            } else {
+                break;
+            }
+        }
+        result
     }
 }
 

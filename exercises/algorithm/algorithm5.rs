@@ -2,8 +2,6 @@
 	bfs
 	This problem requires you to implement a basic BFS algorithm
 */
-
-//I AM NOT DONE
 use std::collections::VecDeque;
 
 // Define a graph
@@ -27,10 +25,34 @@ impl Graph {
 
     // Perform a breadth-first search on the graph, return the order of visited nodes
     fn bfs_with_return(&self, start: usize) -> Vec<usize> {
-        
-		//TODO
-
         let mut visit_order = vec![];
+        
+        // 记录每个节点是否被访问过
+        let mut visited = vec![false; self.adj.len()];
+        
+        // 使用 VecDeque 作为队列，入队用 push_back，出队用 pop_front
+        let mut queue = VecDeque::new();
+
+        // 初始化起始节点
+        visited[start] = true;
+        queue.push_back(start);
+
+        // 当队列不为空时持续遍历
+        while let Some(current) = queue.pop_front() {
+            // 记录当前节点
+            visit_order.push(current);
+
+            // 遍历当前节点的所有邻居
+            for &neighbor in &self.adj[current] {
+                // 如果邻居没被访问过
+                if !visited[neighbor] {
+                    // 必须在这里标记为已访问，否则如果有环路，节点会被重复加入队列
+                    visited[neighbor] = true;
+                    queue.push_back(neighbor);
+                }
+            }
+        }
+
         visit_order
     }
 }
